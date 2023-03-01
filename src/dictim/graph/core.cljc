@@ -2,6 +2,8 @@
   (:require [clojure.string :as str]))
 
 
+
+
 ;; d2 needs nodes referred to in edges to be fully qualified, e.g. cluster1.cluster2.node
 ;; if that edge is not placed inside the right cluster tree.
 
@@ -9,7 +11,7 @@
   [cluster-id cluster-id->parent-id]
   (letfn [(up [parts]
             (let [parent-id (cluster-id->parent-id (first parts))]
-              (if (or (= parent-id (first parts))  ;; prevent stack-overflow
+              (if (or (= parent-id (first parts)) ;; prevent stack-overflow
                       (nil? parent-id))
                 parts
                 (up (cons parent-id parts)))))]
@@ -20,6 +22,7 @@
   (cond
     (keyword? p)     (name p)
     :else            (str p)))
+
 
 (defn- join-parts
   [parts]
@@ -55,25 +58,41 @@
        (into [])))
 
 
-
 (defn- format-edge [sk dk directed? label attrs
-                    {:keys [src-node? dest-node? node-key->cluster cluster->parent] :as context}]
+                    {:keys [src-node?
+                            dest-node?
+                            node-key->cluster
+                            cluster->parent
+                            qualify?] :as context}]
+  
+  (if qualify?
+    (->> [(if src-node?
+            (qualify-node sk node-key->cluster cluster->parent)
+            (qualify-cluster sk cluster->parent))
+          
+          (if directed? "->" "--")
 
-  (->> [(if src-node?
-          (qualify-node sk node-key->cluster cluster->parent)
-          (qualify-cluster sk cluster->parent))
-        
-        (if directed? "->" "--")
+          (if dest-node?
+            (qualify-node dk node-key->cluster cluster->parent)
+            (qualify-cluster dk cluster->parent))
 
-        (if dest-node?
-          (qualify-node dk node-key->cluster cluster->parent)
-          (qualify-cluster dk cluster->parent))
+          label
 
-        label
+          (if (empty? attrs) nil attrs)]
+         
+         remove-nil)
 
-        (if (empty? attrs) nil attrs)]
-       
-       remove-nil))
+    (->> [sk
+          
+          (if directed? "->" "--")
+
+          dk
+
+          label
+
+          (if (empty? attrs) nil attrs)]
+         
+         remove-nil)))
 
 
 (defn- format-node [k {:keys [label] :as attrs}]
@@ -111,7 +130,8 @@
                                node->key
                                node?
                                node-key->cluster
-                               cluster->parent]
+                               cluster->parent
+                               qualify?]
                         :as fns}]
   (map (fn [e]
          (let [s (edge->src-key e)
@@ -125,7 +145,8 @@
                         {:src-node? (node? s)
                          :dest-node? (node? d)
                          :node-key->cluster node-key->cluster
-                         :cluster->parent cluster->parent})))
+                         :cluster->parent cluster->parent
+                         :qualify? qualify?})))
        edges))
 
 
@@ -184,7 +205,8 @@
             edge->attrs
             node->cluster
             cluster->parent
-            cluster->attrs]
+            cluster->attrs
+            qualify?]
      :or {node->key identity
           node->attrs (constantly nil)
           edge->src-key #(or (:src %) (first %))
@@ -192,7 +214,8 @@
           edge->attrs (constantly nil)
           node->cluster (constantly nil)
           cluster->parent (constantly nil)
-          cluster->attrs (constantly nil)}
+          cluster->attrs (constantly nil)
+          qualify? true}
      :as graph-descriptor}]
 
    (let [cluster->nodes (when node->cluster
@@ -234,4 +257,5 @@
                      :node->key node->key
                      :node? node?
                      :node-key->cluster node-key->cluster
-                     :cluster->parent cluster->parent})))))
+                     :cluster->parent cluster->parent
+                     :qualify? qualify?})))))
