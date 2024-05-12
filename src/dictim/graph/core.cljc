@@ -156,7 +156,8 @@
                   cluster->attrs cluster->nodes
                   node->key node->attrs]
   
-  (let [attrs (cluster->attrs cluster)]
+  (let [attrs (when cluster->attrs
+                (cluster->attrs cluster))]
     (->> (concat
           (->> (concat [cluster
                         (:label attrs)
