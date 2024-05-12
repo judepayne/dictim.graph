@@ -14,7 +14,7 @@ Latest release:
 As a git dep:
 
 ```clojure
-io.github.judepayne/dictim.graph {:git/tag "0.1.4" :git/sha "b062c62"}
+io.github.judepayne/dictim.graph {:git/tag "0.1.5" :git/sha "67f4507"}
 ``` 
 
 ## Usage
