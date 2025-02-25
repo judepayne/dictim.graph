@@ -14,7 +14,7 @@ Latest release:
 As a git dep:
 
 ```clojure
-io.github.judepayne/dictim.graph {:git/tag "0.1.5" :git/sha "67f4507"}
+io.github.judepayne/dictim.graph {:git/tag "0.1.6" :git/sha "8121011"}
 ``` 
 
 ## Usage
@@ -33,6 +33,7 @@ These can be followed by a map of zero or more keyword arguments:
 | `:node->cluster` | optional |takes a node and returns the cluster (key) if any that the node belongs to. In d2 speak a cluster is a container |
 | `:cluster->parent` | optional |takes a cluster (key) and returns which cluster (key), if any, it is contained within |
 | `:cluster->attrs` | optional | takes a cluster and returns a map of d2 attributes onto values describing how the cluster should be rendered. |
+| `:directives` | optional | a map of dictim directives  |
 
 `nodes` can be anything but `nodes`, `node->key`, `edges`, `edge->src-key` and `edge->dest-key` must all marry up. e.g. If you choose to pass nodes as (just) a collection of keywords, leaving the `node->key` function to default to `identity` is fine. In this scenario if edges are of the form `[:a :b`] where :a and :b are in the set of nodes or `{:src :a :dest :b}` then you can ommit specifying `edge->src-key` and `edge->dest-key` as well, since the defaults will be fine.
 
@@ -77,7 +78,7 @@ The output is [dictim](https://github.com/judepayne/dictim) format. You can use 
 
 ## License
 
-Copyright © 2023 Jude Payne
+Copyright © 2025 Jude Payne
 
 Distributed under the [MIT License](http://opensource.org/licenses/MIT)
 
