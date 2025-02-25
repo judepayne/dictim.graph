@@ -207,7 +207,8 @@
             node->cluster
             cluster->parent
             cluster->attrs
-            qualify?]
+            qualify?
+            directives]
      :or {node->key identity
           node->attrs (constantly nil)
           edge->src-key #(or (:src %) (first %))
@@ -216,7 +217,8 @@
           node->cluster (constantly nil)
           cluster->parent (constantly nil)
           cluster->attrs (constantly nil)
-          qualify? true}
+          qualify? true
+          directives nil}
      :as graph-descriptor}]
 
    (let [cluster->nodes (when node->cluster
@@ -235,28 +237,30 @@
 
          node-key->cluster (fn [k] (node->cluster (first (filter #(= k (node->key %)) nodes))))]
 
-     (concat
+     (cond->>
+         (concat
 
-      ;; layout clusters
-      (map (fn [[cluster children]]
-             (subgraphs cluster children
-                        cluster->attrs cluster->nodes
-                        node->key node->attrs))
-           cluster-tree)
+          ;; layout clusters
+          (map (fn [[cluster children]]
+                 (subgraphs cluster children
+                            cluster->attrs cluster->nodes
+                            node->key node->attrs))
+               cluster-tree)
 
-      ;; lay out any remaining nodes not in clusters
-      (layout-nodes node->key nil cluster->nodes node->attrs)
+          ;; lay out any remaining nodes not in clusters
+          (layout-nodes node->key nil cluster->nodes node->attrs)
 
 
-      ;; all edges. It's easier to lay out all edges in one go using their qualified names referring to a
-      ;; node's position in the cluster hierarchy e.g. x.y.b rather than try to position the edges
-      ;; into the d2 cluster hierarchy.
-      (layout-edges edges
-                    {:edge->src-key edge->src-key 
-                     :edge->dest-key edge->dest-key
-                     :edge->attrs edge->attrs
-                     :node->key node->key
-                     :node? node?
-                     :node-key->cluster node-key->cluster
-                     :cluster->parent cluster->parent
-                     :qualify? qualify?})))))
+          ;; all edges. It's easier to lay out all edges in one go using their qualified names referring to a
+          ;; node's position in the cluster hierarchy e.g. x.y.b rather than try to position the edges
+          ;; into the d2 cluster hierarchy.
+          (layout-edges edges
+                        {:edge->src-key edge->src-key 
+                         :edge->dest-key edge->dest-key
+                         :edge->attrs edge->attrs
+                         :node->key node->key
+                         :node? node?
+                         :node-key->cluster node-key->cluster
+                         :cluster->parent cluster->parent
+                         :qualify? qualify?}))
+       directives (cons directives)))))
